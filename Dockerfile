@@ -12,7 +12,9 @@ WORKDIR /app
 
 # TODO(step-4b): copy package.json and package-lock.json, then install deps.
 COPY app/package.json app/package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev\
+    && npm install --no-save --package-lock=false --omit=dev proxy-addr@2.0.8 \
+    && npm ls proxy-addr
 
 # TODO(step-4c): copy the rest of the app source into /app.
 COPY app/ .
@@ -23,6 +25,13 @@ COPY app/ .
 
 # TODO(step-4d): set the runtime base image (same tag as step-4a for consistency).
 FROM node:20.11-slim
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN rm -rf /usr/local/lib/node_modules/npm \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
 WORKDIR /app
 
